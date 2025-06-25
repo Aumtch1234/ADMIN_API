@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 
-const { login, addAdmin } = require('../controllers/authController');
+const { login, addAdmin, configAdmin } = require('../controllers/authController');
 const { getAllAdmins, verifyAdmin, getPendingAdmins } = require('../controllers/allAdminController');
 const { createFood, getFoods, deleteFood, updateFood } = require('../controllers/FoodController');
 const { verifyToken, requireVerified } = require('../middlewares/authMiddleware');
@@ -14,6 +14,8 @@ const upload = multer({ storage });
 // Auth
 router.post('/login', login);
 router.post('/add-admin', addAdmin);
+router.post('/config-admin', configAdmin);
+
 
 // Admin Verification
 router.patch('/admins/verify/:id', verifyToken, requireVerified, verifyAdmin);
