@@ -4,52 +4,28 @@ const pool = require('../db');
 
 exports.verifyAdmin = async (req, res) => {
   const { id } = req.params;
-  const { role, verify } = req.body;
+  const { role } = req.body;
 
-  const updates = [];
-  const values = [];
-
-  if (role !== undefined) {
-    if (!['user', 'admin', 'm_admin'].includes(role)) {
-      return res.status(400).json({ message: 'Invalid role' });
-    }
-    updates.push(`role = $${updates.length + 1}`);
-    values.push(role);
+  if (!role || !['user', 'admin', 'm_admin'].includes(role)) {
+    return res.status(400).json({ message: 'Invalid role' });
   }
-
-  if (verify !== undefined) {
-    if (typeof verify !== 'boolean') {
-      return res.status(400).json({ message: 'Invalid verify value' });
-    }
-    updates.push(`verify = $${updates.length + 1}`);
-    values.push(verify);
-  }
-
-  if (updates.length === 0) {
-    return res.status(400).json({ message: 'No valid fields to update' });
-  }
-
-  values.push(id); // for WHERE clause
 
   try {
-    await pool.query(
-      `UPDATE admins SET ${updates.join(', ')} WHERE id = $${updates.length + 1}`,
-      values
-    );
-
+    await pool.query('UPDATE admins SET role = $1 WHERE id = $2', [role, id]);
     res.json({ message: 'Admin updated successfully' });
   } catch (err) {
-    console.error('Error verifying admin:', err);
+    console.error('Error updating admin role:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };
+
 
 
 
 exports.getPendingAdmins = async (req, res) => {
   try {
     const result = await pool.query(
-      'SELECT id, username, verify, role FROM admins ORDER BY id ASC'
+      'SELECT id, username, role FROM admins ORDER BY id ASC'
     );
     res.json(result.rows);
   } catch (err) {
@@ -58,14 +34,15 @@ exports.getPendingAdmins = async (req, res) => {
   }
 };
 
+
 exports.getAllAdmins = async (req, res) => {
   try {
     const result = await pool.query(
-      'SELECT *, username, verify, role FROM admins ORDER BY id ASC'
+      'SELECT *, username, role FROM admins ORDER BY id ASC'
     );
     res.json(result.rows);
   } catch (err) {
-    console.error('Error fetching pending admins:', err);
+    console.error('Error fetching all admins:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };

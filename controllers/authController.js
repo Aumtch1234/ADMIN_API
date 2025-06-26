@@ -7,18 +7,17 @@ exports.login = async (req, res) => {
   const userQuery = await pool.query('SELECT * FROM admins WHERE username = $1', [username]);
 
   if (userQuery.rows.length === 0)
-    return res.status(400).json({ message: 'User not found' });
+    return res.status(404).json({ message: 'ไม่พบชื่อผู้ใช้นี้ !!' });
 
   const user = userQuery.rows[0];
   const isMatch = await bcrypt.compare(password, user.password);
 
   if (!isMatch)
-    return res.status(401).json({ message: 'Invalid credentials' });
+    return res.status(403).json({ message: 'รหัสผ่านหรือ username ไม่ถูกต้อง' });
 
   const token = jwt.sign(
     {
       username: user.username,
-      verify: user.verify, // << เพิ่ม verify ลง token
       role: user.role    // 👈 เพิ่ม role เข้าไป
     },
     process.env.JWT_SECRET,
@@ -41,8 +40,8 @@ exports.addAdmin = async (req, res) => {
     const hashed = await bcrypt.hash(password, 10);
 
     await pool.query(
-      'INSERT INTO admins (username, password, verify) VALUES ($1, $2, $3)',
-      [newAdmin, hashed, false]
+      'INSERT INTO admins (username, password) VALUES ($1, $2)',
+      [newAdmin, hashed]
     );
 
     res.status(201).json({ message: 'Admin created (not verified)' });
@@ -75,8 +74,8 @@ exports.configAdmin = async (req, res) => {
     const hashed = await bcrypt.hash(password, 10);
 
     await pool.query(
-      'INSERT INTO admins (username, password, verify, role) VALUES ($1, $2, $3, $4)',
-      [newAdmin, hashed, false, 'm_admin'] // 👈 กำหนด role เป็น m_admin
+      'INSERT INTO admins (username, password, role) VALUES ($1, $2, $3)',
+      [newAdmin, hashed, 'm_admin'] // 👈 กำหนด role เป็น m_admin
     );
 
     res.status(201).json({ message: 'Admin created (not verified)' });

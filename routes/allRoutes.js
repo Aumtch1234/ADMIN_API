@@ -5,7 +5,9 @@ const router = express.Router();
 const { login, addAdmin, configAdmin } = require('../controllers/authController');
 const { getAllAdmins, verifyAdmin, getPendingAdmins } = require('../controllers/allAdminController');
 const { createFood, getFoods, deleteFood, updateFood } = require('../controllers/FoodController');
-const { verifyToken, requireVerified } = require('../middlewares/authMiddleware');
+const { verifyToken } = require('../middlewares/authMiddleware');
+const { getUsersGroupedByProvider } = require('../controllers/UsersController');
+
 
 const multer = require('multer');
 const { storage } = require('../utils/cloudinary');
@@ -18,14 +20,17 @@ router.post('/config-admin', configAdmin);
 
 
 // Admin Verification
-router.patch('/admins/verify/:id', verifyToken, requireVerified, verifyAdmin);
+router.patch('/admins/verify/:id', verifyToken, verifyAdmin);
 router.get('/admins/pending', getPendingAdmins);
-router.get('/admins/all', verifyToken, requireVerified, getAllAdmins);
+router.get('/admins/all', verifyToken, getAllAdmins);
 
 // Food Menu
-router.post('/addfood', verifyToken, requireVerified, upload.single('image'), createFood);
+router.post('/addfood', verifyToken, upload.single('image'), createFood);
 router.get('/foods' , getFoods);
-router.delete('/foods/:id', verifyToken, requireVerified, deleteFood);
-router.put('/foods/:id', verifyToken, requireVerified, upload.single('image'), updateFood);
+router.delete('/foods/:id', verifyToken, deleteFood);
+router.put('/foods/:id', verifyToken, upload.single('image'), updateFood);
+
+//Users Menu
+router.get('/users', getUsersGroupedByProvider, verifyToken); // Uncomment if you have a getUsers function
 
 module.exports = router;

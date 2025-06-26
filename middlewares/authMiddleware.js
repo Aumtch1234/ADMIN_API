@@ -13,9 +13,3 @@ exports.verifyToken = (req, res, next) => {
   });
 };
 
-exports.requireVerified = (req, res, next) => {
-  if (!req.user.verify) {
-    return res.status(403).json({ message: 'Permission denied (not verified)' });
-  }
-  next();
-};
